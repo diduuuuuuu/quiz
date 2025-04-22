@@ -1,0 +1,285 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>항공안전관리 문제풀이 (중복 없이 출제)</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin: 40px; }
+        select, button, input[type='text'] { padding: 10px; font-size: 16px; margin: 5px; }
+        .question-block { margin: 20px auto; max-width: 600px; text-align: left; }
+        .question-text { font-size: 18px; margin: 10px 0; }
+        .feedback { margin-top: 5px; color: green; font-weight: bold; }
+        .explanation { margin-top: 3px; color: #555; font-size: 15px; }
+        .score { font-size: 18px; margin: 20px; }
+    </style>
+</head>
+<body>
+    <h1>항공안전관리 전체 문제풀이 (중복 없이 출제)</h1>
+    <div>
+        <label for="chapter">챕터 선택:</label>
+        <select id="chapter">
+            <option value="all">전체</option>
+            <option value="1">Chapter 1</option><option value="2">Chapter 2</option><option value="3">Chapter 3</option><option value="4">Chapter 4</option><option value="5">Chapter 5</option><option value="6">Chapter 6</option><option value="7">Chapter 7</option><option value="8">Chapter 8</option><option value="9">Chapter 9</option><option value="10">Chapter 10</option><option value="11">Chapter 11</option><option value="12">Chapter 12</option><option value="13">Chapter 13</option>
+        </select>
+        <button onclick="generateSet()">3문제 출제</button>
+        <button onclick="retryWrong()">틀린 문제 다시 풀기</button>
+    </div>
+    <div class="score" id="score">점수: 0 / 0</div>
+    <form id="quizForm" onsubmit="checkAnswers(event)">
+        <div id="quizArea"></div>
+        <button type="submit">정답 제출</button>
+    </form>
+
+    <script>
+        const quizData = [
+    {
+        "chapter": "1",
+        "q": "정보처리 모델의 순서는?",
+        "a": "입력–처리–응답-피드백",
+        "type": "text",
+        "exp": "정답 '입력–처리–응답-피드백'에 대한 설명이 제공됩니다."
+    },
+    {
+        "chapter": "1",
+        "q": "무의식처리는 working memory를 사용한다. (O/X)",
+        "a": "X",
+        "type": "ox",
+        "exp": "정답 'X'에 대한 설명이 제공됩니다."
+    },
+    {
+        "chapter": "1",
+        "q": "정보에 대한 응답은 항상 물리적 언어적 형태로만 나온다. (O/X)",
+        "a": "X",
+        "type": "ox",
+        "exp": "정답 'X'에 대한 설명이 제공됩니다."
+    },
+    {
+        "chapter": "2",
+        "q": "블랙홀 착시에 대해 서술하시오.",
+        "a": "지형단서가 없는 곳에서 조종사가 무의식적으로 강하율을 증가시켜 저고도로 접근하는 현상",
+        "type": "text",
+        "exp": "정답 '지형단서가 없는 곳에서 조종사가 무의식적으로 강하율을 증가시켜 저고도로 접근하는 현상'에 대한 설명이 제공됩니다."
+    },
+    {
+        "chapter": "2",
+        "q": "활주로가 넓다면 조종사는 무의식적으로 고도를 어떻게 조절하는가?",
+        "a": "고도를 높인다",
+        "type": "text",
+        "exp": "정답 '고도를 높인다'에 대한 설명이 제공됩니다."
+    },
+    {
+        "chapter": "2",
+        "q": "PAPI, VASI, OLS 중 활주로 접근 각도에 따라 달라진 조명 색의 비율을 통해 고도를 유추할 수 있는 것은?",
+        "a": "PAPI, VASI",
+        "type": "text",
+        "exp": "정답 'PAPI, VASI'에 대한 설명이 제공됩니다."
+    },
+    {
+        "chapter": "3",
+        "q": "가장 중요한 정보만 선택적으로 처리한다고 설명하는 이론은 무엇인가?",
+        "a": "필터 이론",
+        "type": "text",
+        "exp": "정답 '필터 이론'에 대한 설명이 제공됩니다."
+    },
+    {
+        "chapter": "3",
+        "q": "조종사의 주의력 관리를 돕기 위해 도입된 훈련 프로그램의 이름은 무엇인가?",
+        "a": "CRM(Crew Resource Management) 훈련",
+        "type": "text",
+        "exp": "정답 'CRM(Crew Resource Management) 훈련'에 대한 설명이 제공됩니다."
+    },
+    {
+        "chapter": "3",
+        "q": "조종사는 업무량이 많을 때보다 적을 때 주의력을 더 효과적으로 유지할 수 있다. (O/X)",
+        "a": "X",
+        "type": "ox",
+        "exp": "정답 'X'에 대한 설명이 제공됩니다."
+    },
+    {
+        "chapter": "4",
+        "q": "경계 저하는 완전히 막을 수 있는가? (O/X)",
+        "a": "X",
+        "type": "ox",
+        "exp": "정답 'X'에 대한 설명이 제공됩니다."
+    },
+    {
+        "chapter": "4",
+        "q": "조종사의 주의력이 가장 저하될 수 있는 상황은 언제입니까?",
+        "a": "C",
+        "type": "text",
+        "exp": "정답 'C'에 대한 설명이 제공됩니다."
+    },
+    {
+        "chapter": "4",
+        "q": "지속적인 주의력을 유지하는 것은 무엇인가?",
+        "a": "C",
+        "type": "text",
+        "exp": "정답 'C'에 대한 설명이 제공됩니다."
+    },
+    {
+        "chapter": "5",
+        "q": "기술 습득은 기본적으로 단계적인 과정을 거친다. (O/X)",
+        "a": "O",
+        "type": "ox",
+        "exp": "정답 'O'에 대한 설명이 제공됩니다."
+    },
+    {
+        "chapter": "5",
+        "q": "Slip은 의도한 행동을 잘못 수행하는 오류다. (O/X)",
+        "a": "O",
+        "type": "ox",
+        "exp": "정답 'O'에 대한 설명이 제공됩니다."
+    },
+    {
+        "chapter": "5",
+        "q": "CRM과 HF는 항공 분야에서 인간 오류를 관리하고 예방하는데 필수적인 요소이다. (O/X)",
+        "a": "O",
+        "type": "ox",
+        "exp": "정답 'O'에 대한 설명이 제공됩니다."
+    },
+    {
+        "chapter": "5",
+        "q": "위반행위 자체가 위반 원인보다 중요하다. (O/X)",
+        "a": "X",
+        "type": "ox",
+        "exp": "정답 'X'에 대한 설명이 제공됩니다."
+    },
+    {
+        "chapter": "5",
+        "q": "솔직한 보고를 하면 소문이 퍼진다. (O/X)",
+        "a": "X",
+        "type": "ox",
+        "exp": "정답 'X'에 대한 설명이 제공됩니다."
+    },
+    {
+        "chapter": "5",
+        "q": "오류는 자신의 능력이 부족한 것이다. (O/X)",
+        "a": "X",
+        "type": "ox",
+        "exp": "정답 'X'에 대한 설명이 제공됩니다."
+    },
+    {
+        "chapter": "9",
+        "q": "RPD 모델은 특히 어떤 상황에서 효과적인가요?",
+        "a": "시간 압박이 크고, 신속한 판단이 필요한 상황일 때",
+        "type": "text",
+        "exp": "정답 '시간 압박이 크고, 신속한 판단이 필요한 상황일 때'에 대한 설명이 제공됩니다."
+    },
+    {
+        "chapter": "9",
+        "q": "다음 중 RPD 모델의 특징이 아닌 것은 무엇인가요?",
+        "a": "모든 가능성을 나열하고 점수를 매긴다",
+        "type": "text",
+        "exp": "정답 '모든 가능성을 나열하고 점수를 매긴다'에 대한 설명이 제공됩니다."
+    },
+    {
+        "chapter": "9",
+        "q": "RPD 모델에 따르면, 처음 생각한 옵션이 적절하지 않으면 어떻게 해야 하나요?",
+        "a": "새로운 옵션을 떠올려 시뮬레이션한다",
+        "type": "text",
+        "exp": "정답 '새로운 옵션을 떠올려 시뮬레이션한다'에 대한 설명이 제공됩니다."
+    }
+];
+
+        let currentSet = [];
+        let score = 0, total = 0;
+        let wrongList = [];
+        let cyclePool = [...quizData];
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function generateSet(source = cyclePool, isRetry = false) {
+            const selected = document.getElementById('chapter').value;
+            if (!isRetry) {
+                if (selected !== 'all') {
+                    source = cyclePool.filter(q => q.chapter === selected);
+                }
+                if (source.length < 3) {
+                    cyclePool = shuffle([...quizData]);
+                    alert("문제를 모두 풀었습니다! 새로운 사이클이 시작됩니다.");
+                    generateSet(cyclePool);
+                    return;
+                }
+            }
+
+            currentSet = [];
+            while (currentSet.length < 3 && source.length > 0) {
+                const index = Math.floor(Math.random() * source.length);
+                currentSet.push(source.splice(index, 1)[0]);
+                if (!isRetry) {
+                    const poolIndex = cyclePool.indexOf(currentSet[currentSet.length - 1]);
+                    if (poolIndex !== -1) {
+                        cyclePool.splice(poolIndex, 1);
+                    }
+                }
+            }
+
+            let html = "";
+            currentSet.forEach((q, i) => {
+                html += `<div class='question-block'>
+                            <div class='question-text'>${i + 1}. ${q.q}</div>`;
+                if (q.type === "ox") {
+                    html += `
+                        <label><input type="radio" name="answer${i}" value="O"> O</label>
+                        <label><input type="radio" name="answer${i}" value="X"> X</label>
+                    `;
+                } else {
+                    html += `<input type="text" name="answer${i}" style="width: 90%">`;
+                }
+                html += `<div class='feedback' id='feedback${i}'></div><div class='explanation' id='exp${i}'></div></div>`;
+            });
+            document.getElementById('quizArea').innerHTML = html;
+        }
+
+        function retryWrong() {
+            if (wrongList.length === 0) {
+                alert("틀린 문제가 없습니다!");
+                return;
+            }
+            generateSet([...wrongList], true);
+        }
+
+        function checkAnswers(event) {
+            event.preventDefault();
+            let correctThisRound = 0;
+            currentSet.forEach((q, i) => {
+                let userInput = "";
+                const inputs = document.getElementsByName(`answer${i}`);
+                if (q.type === "ox") {
+                    for (const input of inputs) {
+                        if (input.checked) {
+                            userInput = input.value;
+                        }
+                    }
+                } else {
+                    userInput = inputs[0].value;
+                }
+                const feedback = document.getElementById(`feedback${i}`);
+                const exp = document.getElementById(`exp${i}`);
+                if (userInput.trim().toUpperCase() === q.a.trim().toUpperCase()) {
+                    feedback.innerText = "정답입니다!";
+                    correctThisRound++;
+                } else {
+                    feedback.innerText = "틀렸습니다. 정답: " + q.a;
+                    wrongList.push(q);
+                }
+                exp.innerText = q.exp ? "해설: " + q.exp : "";
+            });
+            score += correctThisRound;
+            total += currentSet.length;
+            updateScore();
+        }
+
+        function updateScore() {
+            document.getElementById('score').innerText = `점수: ${score} / ${total}`;
+        }
+    </script>
+</body>
+</html>
